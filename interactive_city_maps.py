@@ -10,57 +10,26 @@ import pandas as pd
 import folium
 import branca.colormap as cm
 
-# --------------------------------------------------
-# Load data
-# --------------------------------------------------
+# load data
 
-us_tracts = gpd.read_file(
-    r"C:\Users\tjmaginn\Dropbox\My Research\Substack\airbnb\data\shapefiles\us tract\US_tract_2023.shp"
-).to_crs(epsg=4326)
+us_tracts = gpd.read_file(r"C:\Users\tjmaginn\Dropbox\My Research\Substack\airbnb\data\shapefiles\us tract\US_tract_2023.shp").to_crs(epsg=4326)
 
-bnb_data = pd.read_csv(
-    r"C:\Users\tjmaginn\Dropbox\My Research\Substack\airbnb\data\clean\airbnb_tract_level_mapping.csv"
-)
+bnb_data = pd.read_csv(r"C:\Users\tjmaginn\Dropbox\My Research\Substack\airbnb\data\clean\airbnb_tract_level_mapping.csv")
 
 bnb_data["censustract"] = bnb_data["censustract"].astype(str)
-bnb_data.loc[bnb_data["city"].isin(["la", "sf"]), "censustract"] = (
-    bnb_data.loc[bnb_data["city"].isin(["la", "sf"]), "censustract"]
-    .str.zfill(11)
-)
+bnb_data.loc[bnb_data["city"].isin(["la", "sf"]), "censustract"] = (bnb_data.loc[bnb_data["city"].isin(["la", "sf"]), "censustract"].str.zfill(11))
 
-supp_tracts = pd.read_csv(
-    r"C:\Users\tjmaginn\Dropbox\My Research\Substack\airbnb\data\clean\supplemental_tract.csv"
-)
-
+supp_tracts = pd.read_csv(r"C:\Users\tjmaginn\Dropbox\My Research\Substack\airbnb\data\clean\supplemental_tract.csv")
 supp_tracts["censustract"] = supp_tracts["censustract"].astype(str).str.zfill(11)
 
-# --------------------------------------------------
-# City boundaries
-# --------------------------------------------------
+# city boundaries
 
-la_geom = gpd.read_file(
-    r"C:\Users\tjmaginn\Dropbox\My Research\Substack\airbnb\data\shapefiles\la boundaries\City_Boundary.shp"
-).to_crs(epsg=4326).unary_union
-
-chi_geom = gpd.read_file(
-    r"C:\Users\tjmaginn\Dropbox\My Research\Substack\airbnb\data\shapefiles\chi boundaries\chi_boundary.shp"
-).to_crs(epsg=4326).unary_union
-
-nola_geom = gpd.read_file(
-    r"C:\Users\tjmaginn\Dropbox\My Research\Substack\airbnb\data\shapefiles\nola boundaries\nola_tracts.shp"
-).to_crs(epsg=4326).unary_union
-
-nash_geom = gpd.read_file(
-    r"C:\Users\tjmaginn\Dropbox\My Research\Substack\airbnb\data\shapefiles\nash boundaries\nash_areas.shp"
-).to_crs(epsg=4326).unary_union
-
-sf_geom = gpd.read_file(
-    r"C:\Users\tjmaginn\Dropbox\My Research\Substack\airbnb\data\shapefiles\sf tract\sf_tracts.shp"
-).to_crs(epsg=4326).unary_union
-
-nyc_geom = gpd.read_file(
-    r"C:\Users\tjmaginn\Dropbox\My Research\Substack\airbnb\data\shapefiles\ny tract\nyct2020.shp"
-).to_crs(epsg=4326).unary_union
+la_geom = gpd.read_file(r"C:\Users\tjmaginn\Dropbox\My Research\Substack\airbnb\data\shapefiles\la boundaries\City_Boundary.shp").to_crs(epsg=4326).unary_union
+chi_geom = gpd.read_file(r"C:\Users\tjmaginn\Dropbox\My Research\Substack\airbnb\data\shapefiles\chi boundaries\chi_boundary.shp").to_crs(epsg=4326).unary_union
+nola_geom = gpd.read_file(r"C:\Users\tjmaginn\Dropbox\My Research\Substack\airbnb\data\shapefiles\nola boundaries\nola_tracts.shp").to_crs(epsg=4326).unary_union
+nash_geom = gpd.read_file(r"C:\Users\tjmaginn\Dropbox\My Research\Substack\airbnb\data\shapefiles\nash boundaries\nash_areas.shp").to_crs(epsg=4326).unary_union
+sf_geom = gpd.read_file(r"C:\Users\tjmaginn\Dropbox\My Research\Substack\airbnb\data\shapefiles\sf tract\sf_tracts.shp").to_crs(epsg=4326).unary_union
+nyc_geom = gpd.read_file(r"C:\Users\tjmaginn\Dropbox\My Research\Substack\airbnb\data\shapefiles\ny tract\nyct2020.shp").to_crs(epsg=4326).unary_union
 
 city_geoms = {
     "la": la_geom,
@@ -80,9 +49,7 @@ city_views = {
     "nash": [36.1627, -86.7816, 11],
 }
 
-# --------------------------------------------------
-# Create map
-# --------------------------------------------------
+# create map
 
 m = folium.Map(
     location=[40.7128, -74.0060],
@@ -92,19 +59,15 @@ m = folium.Map(
 
 map_name = m.get_name()
 
-# --------------------------------------------------
-# 🔹 HTML DOCUMENT TITLE (GitHub Pages / browser tab)
-# --------------------------------------------------
 
+# HTML documen title for GitHub pages
 m.get_root().html.add_child(
     folium.Element("""
     <title>Share of housing units used as Airbnbs</title>
     """)
 )
 
-# --------------------------------------------------
-# Visual title overlay
-# --------------------------------------------------
+# visual title overlay
 
 title_html = """
 <div style="
@@ -133,10 +96,8 @@ title_html = """
 
 m.get_root().html.add_child(folium.Element(title_html))
 
-# --------------------------------------------------
-# Force map height (GitHub Pages)
-# --------------------------------------------------
 
+# force map height for GitHub pages
 m.get_root().header.add_child(
     folium.Element(f"""
     <style>
@@ -155,57 +116,43 @@ m.get_root().header.add_child(
     """)
 )
 
-# --------------------------------------------------
-# Add city layers
-# --------------------------------------------------
-
+# add city layers
 for city_code, (lat, lon, zoom) in city_views.items():
-
     city_geom = city_geoms[city_code]
-
     city_tracts = us_tracts[
         us_tracts.intersects(city_geom)
     ][["GEOID", "geometry"]].copy()
-
-    # geometry simplification (file size)
+    # geometry simplification to reduce file size
     city_tracts["geometry"] = city_tracts["geometry"].simplify(
         tolerance=0.0005,
         preserve_topology=True
     )
-
     city_gdf = city_tracts.merge(
         supp_tracts,
         left_on="GEOID",
         right_on="censustract",
         how="left",
     )
-
     city_bnb = bnb_data[bnb_data["city"] == city_code][
         ["censustract", "tract_bnb_share"]
     ]
-
     city_gdf = city_gdf.merge(
         city_bnb,
         on="censustract",
         how="left",
     )
-
     mask = city_gdf["GEOID"] == "06075980300"
     cols_to_nan = city_gdf.columns.difference(["geometry", "GEOID", "censustract"])
     city_gdf.loc[mask, cols_to_nan] = pd.NA
-
     city_gdf["tract_bnb_share"] = city_gdf["tract_bnb_share"].fillna(0)
     city_gdf["bnb_capped"] = city_gdf["tract_bnb_share"].clip(upper=0.15)
-
     city_gdf["bnb_pct"] = (city_gdf["tract_bnb_share"] * 100).round(2).astype(str) + "%"
     city_gdf["nonwhite_pct"] = (city_gdf["nonwhite_share"] * 100).round(2).astype(str) + "%"
     city_gdf["vacancy_pct"] = (city_gdf["vacancy_rate"] * 100).round(2).astype(str) + "%"
     city_gdf["med_hh_inc_fmt"] = "$" + city_gdf["med_hh_inc"].round(0).astype("Int64").astype(str)
     city_gdf["med_rent_fmt"] = "$" + city_gdf["med_rent"].round(0).astype("Int64").astype(str)
     city_gdf["med_hvalue_fmt"] = "$" + city_gdf["med_hvalue"].round(0).astype("Int64").astype(str)
-
     bins = [0.0001, 0.0025, 0.005, 0.01, 0.02, 0.03, 0.05, 0.075, 0.10, 0.15]
-
     color_scale = cm.StepColormap(
         colors=[
             "#fffff0", "#ffffe5", "#fff7bc", "#fee391", "#fec44f",
@@ -226,7 +173,6 @@ for city_code, (lat, lon, zoom) in city_views.items():
                 "weight": 0.6,
                 "fillOpacity": 0.5,
             }
-
         if val == 0:
             return {
                 "fillColor": "#ffffff",
@@ -234,14 +180,12 @@ for city_code, (lat, lon, zoom) in city_views.items():
                 "weight": 0.6,
                 "fillOpacity": 0.85,
             }
-
         return {
             "fillColor": color_scale(val),
             "color": "#444444",
             "weight": 0.7,
             "fillOpacity": 0.75,
         }
-
     folium.GeoJson(
         city_gdf,
         style_function=style_function,
@@ -268,9 +212,7 @@ for city_code, (lat, lon, zoom) in city_views.items():
         ),
     ).add_to(m)
 
-# --------------------------------------------------
-# Dropdown
-# --------------------------------------------------
+# dropdown menu
 
 dropdown_html = f"""
 <div style="
@@ -315,10 +257,6 @@ function zoomCity(city) {{
 
 m.get_root().html.add_child(folium.Element(dropdown_html))
 
-# --------------------------------------------------
-# Save
-# --------------------------------------------------
+# save
 
-m.save(
-    r"C:\Users\tjmaginn\Dropbox\My Research\Substack\airbnb\outputs\maps\index.html"
-)
+m.save(r"C:\Users\tjmaginn\Dropbox\My Research\Substack\airbnb\outputs\maps\index.html")
